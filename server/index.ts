@@ -31,25 +31,32 @@ app.get(APIPath, (req, res) => {
 
     const ascending: string = req.query.ascending as string;
     let sortedTickets: Ticket[];
+    let reverse = (ascending === 'false');
 
     switch (sortType) {
         case 'date':
-            sortedTickets = paginatedData.sort((x, y) => x.creationTime - y.creationTime);
+            if (!reverse)
+                sortedTickets = paginatedData.sort((x, y) => x.creationTime - y.creationTime);
+            else
+                sortedTickets = paginatedData.sort((y, x) => x.creationTime - y.creationTime);
             break;
         case 'title':
-            sortedTickets = paginatedData.sort((x, y) => x.title.localeCompare(y.title));
+            if (!reverse)
+                sortedTickets = paginatedData.sort((x, y) => x.title.localeCompare(y.title));
+            else
+                sortedTickets = paginatedData.sort((y, x) => x.title.localeCompare(y.title));
             break;
         case 'email':
-            sortedTickets = paginatedData.sort((x, y) => x.userEmail.localeCompare(y.userEmail));
+            if (!reverse)
+                sortedTickets = paginatedData.sort((x, y) => x.userEmail.localeCompare(y.userEmail));
+            else
+                sortedTickets = paginatedData.sort((y, x) => x.userEmail.localeCompare(y.userEmail));
             break;
         default:
             /* No sort required so send the data as is */
             res.send(paginatedData);
             return;
     }
-
-    if (ascending === 'false')
-        sortedTickets = sortedTickets.reverse();
 
     res.send(sortedTickets);
 });
@@ -60,3 +67,8 @@ app.get(APIPath + CountSuffix, (req, res) => {
 
 app.listen(serverAPIPort);
 console.log('server running', serverAPIPort)
+
+/**
+ * email regex : (email:\w+@\w+\.\w+)
+ * before/after : (after:\d{1,2}\/\d{1,2}\/\d{4})
+ */
