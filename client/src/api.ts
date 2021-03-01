@@ -12,12 +12,18 @@ export type Ticket = {
 
 export type ApiClient = {
     getTickets: () => Promise<Ticket[]>;
+    getSortedTickets: (sortType: string, ascending: boolean) => Promise<Ticket[]>;
 }
 
 export const createApiClient = (): ApiClient => {
     return {
         getTickets: () => {
             return axios.get(APIRootPath).then((res) => res.data);
+        },
+        getSortedTickets: (sortType: string, ascending: boolean) =>
+        {
+            return axios.get(`${APIRootPath}/?sortBy=${sortType}&ascending=${ascending}`)
+                    .then((res) => res.data);
         }
     }
 }

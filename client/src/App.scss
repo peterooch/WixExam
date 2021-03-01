@@ -63,15 +63,21 @@ body {
 		font-size: 12px;
 	}
 
+	.sortbtn {
+		background-color: lightblue;
+	}
+	.sort-selected {
+		background-color: azure;
+	}
 	.tickets {
 
 		margin: 0;
 		padding: 0;
 
 		.ticket {
-			overflow: hidden;
-			height: 150px;
-			width: calc(50% - 70px);
+			overflow: auto;
+			height: 200px;
+			width: calc(100% - 70px);
 			margin: 15px;
 			display: inline-block;
 			padding: 10px 20px;
@@ -90,7 +96,9 @@ body {
 				font-style: normal;
 				color: var(--title-color);
 			}
-
+			.content {
+				overflow-wrap: anywhere;
+			}
 			footer {
 
 				display: flex;
@@ -101,6 +109,18 @@ body {
 					font-size: 12px;
 					margin: 10px 0;
 					flex-shrink: 0;
+				}
+			}
+			.labels {
+				justify-content: right;
+
+				.label {
+					background: turquoise;
+					border-color: blue;
+					border-width: 2px;
+					border-radius: 5px;
+					padding: 5px;
+					margin-left: 10px;
 				}
 			}
 		}
