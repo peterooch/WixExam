@@ -2,13 +2,20 @@ import React from 'react';
 import './App.scss';
 
 export type ContentState = {
-    collapsed: boolean
+    collapsed: boolean,
+    btnNeeded: boolean
 }
 
 export class TicketContent extends React.Component<{}, ContentState> {
     
     state: ContentState = {
         collapsed: true,
+        btnNeeded: false
+    }
+
+    componentDidMount = () =>{
+        let btnNeeded = (this.props.children as string).split("\n").length > 3;
+        this.setState({btnNeeded: btnNeeded});
     }
 
     onChange() {
@@ -18,22 +25,21 @@ export class TicketContent extends React.Component<{}, ContentState> {
         if (!this.state.collapsed)
             return this.props.children;
 
-        let temp = this.props.children as string;
-        let lines = temp.split('\n');
-
-        if (lines.length <= 3)
-            return this.props.children;
+        let content = this.props.children as string;
         
-        return lines.slice(0, 3).join('\n');
+        return content.split('\n').slice(0, 3).join('\n');
     }
     render() {
         return (<div className='content'>
                     <p>
-                        {this.getContent()}
+                        {this.state.btnNeeded ? this.getContent() : this.props.children}
                     </p>
-                    <button onClick={(e) => this.onChange()}>
-                    {this.state.collapsed ? 'Show More' : 'Show Less'}
-                    </button>
+                        {this.state.btnNeeded ? 
+                        <button className='btn btn-secondary btn-sm' onClick={(e) => this.onChange()}>
+                        {this.state.collapsed ? 'Show More' : 'Show Less'}
+                        </button>
+                        : null
+                        }
                 </div>);
     }
 }
