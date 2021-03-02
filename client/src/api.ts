@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {APIRootPath, CountSuffix} from '@fed-exam/config';
+import {AppState} from './App';
 
 export type Ticket = {
     id: string,
@@ -16,7 +17,7 @@ export type TicketCount = {
 
 export type ApiClient = {
     getTicketCount: () => Promise<TicketCount>;
-    getTickets: (sortType?: string, ascending?: boolean) => Promise<Ticket[]>;
+    getTickets: (state: AppState) => Promise<Ticket[]>;
 }
 
 export const createApiClient = (): ApiClient => {
@@ -24,9 +25,9 @@ export const createApiClient = (): ApiClient => {
         getTicketCount: () => {
             return axios.get(APIRootPath + CountSuffix).then((res) => res.data);
         },
-        getTickets: (sortType?: string, ascending?: boolean) =>
-        {
-            return axios.get(`${APIRootPath}/?sortBy=${sortType}&ascending=${ascending}`)
+        /* Make to accept AppState to avoid too much changes in call sites */
+        getTickets: (state: AppState) => {
+            return axios.get(`${APIRootPath}/?sortBy=${state.sort}&ascending=${state.ascending}&page=${state.currentPage}`)
                     .then((res) => res.data);
         }
     }

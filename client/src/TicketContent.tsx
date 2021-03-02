@@ -5,16 +5,19 @@ export type ContentState = {
     collapsed: boolean,
     btnNeeded: boolean
 }
+export interface ITicketProps {
+    content: string
+}
 
-export class TicketContent extends React.Component<{}, ContentState> {
+export class TicketContent extends React.Component<ITicketProps, ContentState> {
     
     state: ContentState = {
         collapsed: true,
         btnNeeded: false
     }
 
-    componentDidMount = () =>{
-        let btnNeeded = (this.props.children as string).split("\n").length > 3;
+    componentDidMount() {
+        let btnNeeded = this.props.content.split('\n').length > 3;
         this.setState({btnNeeded: btnNeeded});
     }
 
@@ -22,20 +25,15 @@ export class TicketContent extends React.Component<{}, ContentState> {
         this.setState({collapsed: !this.state.collapsed})
     }
     getContent() {
-        if (!this.state.collapsed)
-            return this.props.children;
-
-        let content = this.props.children as string;
-        
-        return content.split('\n').slice(0, 3).join('\n');
+        return this.props.content.split('\n').slice(0, 3).join('\n');
     }
     render() {
         return (<div className='content'>
                     <p>
-                        {this.state.btnNeeded ? this.getContent() : this.props.children}
+                        {this.state.btnNeeded && this.state.collapsed ? this.getContent() : this.props.content}
                     </p>
                         {this.state.btnNeeded ? 
-                        <button className='btn btn-secondary btn-sm' onClick={(e) => this.onChange()}>
+                        <button className='btn btn-secondary btn-sm' onClick={(_) => this.onChange()}>
                         {this.state.collapsed ? 'Show More' : 'Show Less'}
                         </button>
                         : null

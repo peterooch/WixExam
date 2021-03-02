@@ -1,13 +1,15 @@
 import React from 'react';
 import './App.scss';
-import {createApiClient, Ticket} from './api';
-import {TicketContent} from './TicketContent';
+import { createApiClient, Ticket } from './api';
+import { TicketContent } from './TicketContent';
+import { PAGE_SIZE } from '@fed-exam/config';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export type AppState = {
 	tickets?: Ticket[],
 	ticketCount: number,
+	currentPage: number,
 	search: string,
 	sort: string,
 	ascending: boolean
@@ -17,10 +19,11 @@ const api = createApiClient();
 
 const sortTypes = ['date', 'title', 'email'] as const;
 
-export class App extends React.PureComponent<{}, AppState> {
+export class App extends React.Component<{}, AppState> {
 
 	state: AppState = {
 		ticketCount: 0,
+		currentPage: 1,
 		search: '',
 		sort: 'none',
 		ascending: true
@@ -31,7 +34,7 @@ export class App extends React.PureComponent<{}, AppState> {
 	async componentDidMount() {
 		this.setState({
 			ticketCount:  (await api.getTicketCount()).count,
-			tickets: await api.getTickets()
+			tickets: await api.getTickets(this.state)
 		});
 	}
 
@@ -44,7 +47,7 @@ export class App extends React.PureComponent<{}, AppState> {
 			{filteredTickets.map((ticket) => (<li key={ticket.id} className='ticket'>
 				<h5 className='title'>{ticket.title}</h5>
 				<button className="btn btn-info btn-sm" onClick={(_) => this.onEdit(ticket.id)}>Rename</button>
-				<TicketContent children={ticket.content}/>
+				<TicketContent content={ticket.content}/>
 				<footer>
 					<div className='meta-data'>By {ticket.userEmail} | { new Date(ticket.creationTime).toLocaleString()}</div>
 					{ticket.labels ? this.renderLabels(ticket.labels) : null }
@@ -56,7 +59,7 @@ export class App extends React.PureComponent<{}, AppState> {
 	renderLabels = (labels: string[]) => {
 		return (<div className="labels">
 			{labels.map((label) => (
-				<span className="label">{label}</span> 
+				<span key={label} className="label">{label}</span> 
 			))}
 		</div>);
 	}
@@ -82,30 +85,25 @@ export class App extends React.PureComponent<{}, AppState> {
 			});
 		}, 300);
 	}
+	
+	updateTickets = async () => {
+		this.setState({tickets: await api.getTickets(this.state)})
+	}
 
 	changeSort = async (type: string) => {
-		let buttons = document.querySelectorAll('.sortbtn');
-		
-		for (let i = 0; i < buttons.length; i++) {
-			let button = buttons.item(i);
-			
-			if (button.id === ('sort' + type)) {
-				button.classList.add('btn-dark');
-				button.classList.remove('btn-light');
-			}
-			else {
-				button.classList.add('btn-light');
-				button.classList.remove('btn-dark');
-			}
-		}
-
 		if (type === this.state.sort)
-			this.setState({ascending: !this.state.ascending})
+			this.setState({ascending: !this.state.ascending}, this.updateTickets)
 		else
-			this.setState({sort: type, ascending: false});
-		
-		this.setState({tickets: await api.getTickets(type, this.state.ascending)})
+			this.setState({sort: type, ascending: false}, this.updateTickets);
 	}
+
+	changePage = (pageNum: number) => {
+		if (this.state.currentPage === pageNum)
+			return;
+
+		this.setState({currentPage: pageNum}, this.updateTickets);
+	}
+
 	render() {	
 		const {tickets} = this.state;
 
@@ -114,11 +112,24 @@ export class App extends React.PureComponent<{}, AppState> {
 			<header>
 				<input type="search" placeholder="Search..." onChange={(e) => this.onSearch(e.target.value)}/>
 			</header>
-			{sortTypes.map((type) => <button className='sortbtn btn btn-light btn-sm' id={'sort' + type} onClick={(_) => this.changeSort(type)}>
+			{sortTypes.map((type) => <button key={type}
+											 className={`sortbtn btn ${this.state.sort === type ? 'btn-dark' : 'btn-light'} btn-sm`}
+											 onClick={(_) => this.changeSort(type)}>
 										Sort by {type}
 									 </button>)}
 			{tickets ? <div className='results'>Showing {tickets.length} results out of {this.state.ticketCount} total tickets.</div> : null }	
 			{tickets ? this.renderTickets(tickets) : <h2>Loading..</h2>}
+			<nav>
+				<ul className='pagination justify-content-center'>
+					{[...Array(this.state.ticketCount / PAGE_SIZE).keys()]
+						.map((item) => (<li key={item + 1} className={`page-item ${(this.state.currentPage === item + 1) ? "active" : ""}`}>
+							<button className="page-link"
+								    onClick={() => this.changePage(item + 1)}>
+							{item + 1}
+							</button>
+						</li>))}
+				</ul>
+			</nav>
 		</main>)
 	}
 }

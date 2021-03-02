@@ -17,6 +17,11 @@ app.use((_, res, next) => {
     next();
 });
 
+/* Regular expressions for the advanced search options */
+const emailRE  = /email:([A-Za-z0-9\+\._]+@[\w+\.]+\w+)/;
+const beforeRE = /before:(\d{1,2}\/\d{1,2}\/\d{4})/;
+const afterRE  = /after:(\d{1,2}\/\d{1,2}\/\d{4})/;
+
 app.get(APIPath, (req, res) => {
 
     // @ts-ignore
@@ -25,13 +30,8 @@ app.get(APIPath, (req, res) => {
     const paginatedData = tempData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const sortType: string = req.query.sortBy as string;
-
-    if (sortType === "")
-        res.send(paginatedData); /* No sort required so send the data as is */
-
-    const ascending: string = req.query.ascending as string;
+    const reverse: boolean = req.query.ascending === 'false';
     let sortedTickets: Ticket[];
-    let reverse = (ascending === 'false');
 
     switch (sortType) {
         case 'date':
@@ -53,22 +53,16 @@ app.get(APIPath, (req, res) => {
                 sortedTickets = paginatedData.sort((y, x) => x.userEmail.localeCompare(y.userEmail));
             break;
         default:
-            /* No sort required so send the data as is */
-            res.send(paginatedData);
-            return;
+            sortedTickets = paginatedData;
+            break;
     }
-
+    
     res.send(sortedTickets);
 });
 
-app.get(APIPath + CountSuffix, (req, res) => {
+app.get(APIPath + CountSuffix, (_req, res) => {
     res.send({ count: tempData?.length ?? 0 });
 });
 
 app.listen(serverAPIPort);
 console.log('server running', serverAPIPort)
-
-/**
- * email regex : (email:\w+@\w+\.\w+)
- * before/after : (after:\d{1,2}\/\d{1,2}\/\d{4})
- */
