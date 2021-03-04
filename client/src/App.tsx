@@ -17,7 +17,7 @@ export type AppState = {
 
 const api = createApiClient();
 
-const sortTypes = ['date', 'title', 'email'] as const;
+export const sortTypes = ['date', 'title', 'email'];
 
 export class App extends React.Component<{}, AppState> {
 
@@ -82,10 +82,11 @@ export class App extends React.Component<{}, AppState> {
 		this.searchDebounce = setTimeout(async () => {
 			this.setState({
 				search: val
-			});
+			}, this.updateTickets);
 		}, 300);
 	}
 	
+	/* State update callback, fetch tickets according to the new state */
 	updateTickets = async () => {
 		this.setState({tickets: await api.getTickets(this.state)})
 	}

@@ -70,7 +70,6 @@ body {
 
 		.ticket {
 			overflow: auto;
-			height: 200px;
 			width: calc(100% - 70px);
 			margin: 15px;
 			display: inline-block;
@@ -92,6 +91,11 @@ body {
 			}
 			.content {
 				overflow-wrap: anywhere;
+
+				.collapsed {
+					max-height: 75px;
+					overflow: hidden;
+				}
 			}
 			footer {
 
@@ -109,8 +113,7 @@ body {
 				justify-content: right;
 
 				.label {
-					background: turquoise;
-					border-color: blue;
+					background: rgb(149, 212, 236);
 					border-width: 2px;
 					border-radius: 5px;
 					padding: 5px;

@@ -3,41 +3,30 @@ import './App.scss';
 
 export type ContentState = {
     collapsed: boolean,
-    btnNeeded: boolean
 }
 export interface ITicketProps {
     content: string
 }
 
+/* Separate the ticket dynamic parts into a component so to not mix up states */
 export class TicketContent extends React.Component<ITicketProps, ContentState> {
     
     state: ContentState = {
-        collapsed: true,
-        btnNeeded: false
-    }
-
-    componentDidMount() {
-        let btnNeeded = this.props.content.split('\n').length > 3;
-        this.setState({btnNeeded: btnNeeded});
+        collapsed: true
     }
 
     onChange() {
         this.setState({collapsed: !this.state.collapsed})
     }
-    getContent() {
-        return this.props.content.split('\n').slice(0, 3).join('\n');
-    }
+
     render() {
         return (<div className='content'>
-                    <p>
-                        {this.state.btnNeeded && this.state.collapsed ? this.getContent() : this.props.content}
-                    </p>
-                        {this.state.btnNeeded ? 
-                        <button className='btn btn-secondary btn-sm' onClick={(_) => this.onChange()}>
+                    <div className={this.state.collapsed ? "collapsed" : ""}>
+                        {this.props.content}
+                    </div>
+                    <button className='btn btn-link btn-sm' onClick={(_) => this.onChange()}>
                         {this.state.collapsed ? 'Show More' : 'Show Less'}
-                        </button>
-                        : null
-                        }
+                    </button>
                 </div>);
     }
 }
