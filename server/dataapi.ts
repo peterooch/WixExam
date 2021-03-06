@@ -11,7 +11,7 @@ export class Data {
 
     public static getTickets(): Ticket[] {
         if (Data.doUpdate) {
-            let buffer = fs.readFileSync(Data.dataFile);
+            const buffer = fs.readFileSync(Data.dataFile);
             Data.tickets = JSON.parse(buffer.toString());
             Data.doUpdate = false;
         }
@@ -19,7 +19,7 @@ export class Data {
     }
 
     public static async saveTicket(ticket: Ticket) {
-        let index = Data.tickets.findIndex(t => t.id === ticket.id);
+        const index = Data.tickets.findIndex(t => t.id === ticket.id);
         if (index === -1)
             return;
         Data.tickets[index] = ticket;

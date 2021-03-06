@@ -42,7 +42,7 @@ export class App extends React.Component<{}, AppState> {
 	}
 
 	editTitle = async (ticketId: string) => {
-		let ticket = this.state.tickets?.find((t) => (t.id === ticketId));
+		let ticket = this.state.tickets?.find(t => t.id === ticketId);
 		let newtitle = prompt("Title rename", ticket?.title);
 
 		if (ticket && newtitle && ticket.title !== newtitle) {
@@ -98,24 +98,22 @@ export class App extends React.Component<{}, AppState> {
 			<header>
 				<input type="search" placeholder="Search..." onChange={(e) => this.onSearch(e.target.value)}/>
 			</header>
-			<div className="btn-group">
+			<span className="btn-group">
 			{sortTypes.map((type) => <button key={type}
 											 className={`sortbtn btn ${this.state.sort === type ? 'btn-dark' : 'btn-light'} btn-sm`}
-											 onClick={(_) => this.changeSort(type)}>
+											 onClick={() => this.changeSort(type)}>
 										Sort by {type}
 									 </button>)}
-			</div>
-			<div>
-			&nbsp;Advanced options
-			<br/>
+			</span>
 			&nbsp;Tickets per page:&nbsp;
 			<input type="number" className="page-size"
 					value={this.state.ticketsPerPage}
 					onChange={(e) => this.setState({ticketsPerPage: Number(e.target.value)}, this.updateTickets)}/>&nbsp;
+			{/* //Attempt at making the superseach
 			<input type="checkbox"
 				   checked={this.state.superSearch}
 				   onChange={() => this.setState({superSearch: !this.state.superSearch}, this.updateTickets)}/>&nbsp;Super Search (disables sorting and advanced filtering)
-			</div>
+			*/}
 			{tickets ? <div className='results'>Showing {tickets.length} results out of {this.getTicketCount()} total tickets.</div> : null }	
 			{tickets ? this.renderTickets(tickets) : <h2>Loading..</h2>}
 			<nav>
@@ -126,9 +124,9 @@ export class App extends React.Component<{}, AppState> {
 
 	renderTickets = (tickets: Ticket[]) => {
 		return (<ul className='tickets'>
-			{tickets.map((ticket) => (<li key={ticket.id} className='ticket'>
+			{tickets.map(ticket => (<li key={ticket.id} className='ticket'>
 				<h5 className='title'>{ticket.title}</h5>
-				<button className="btn btn-info btn-sm" onClick={(_) => this.editTitle(ticket.id)}>Rename</button>
+				<button className="btn btn-info btn-sm" onClick={() => this.editTitle(ticket.id)}>Rename</button>
 				<TicketContent content={ticket.content}/>
 				<footer>
 					<div className='meta-data'>By {ticket.userEmail} | { new Date(ticket.creationTime).toLocaleString()}</div>
@@ -140,7 +138,7 @@ export class App extends React.Component<{}, AppState> {
 
 	renderLabels = (labels: string[]) => {
 		return (<div className="labels">
-			{labels.map((label) => (
+			{labels.map(label => (
 				<span key={label} className="label">{label}</span> 
 			))}
 		</div>);
@@ -150,7 +148,7 @@ export class App extends React.Component<{}, AppState> {
 		const current = this.state.currentPage;
 		const pageCount = Math.ceil(this.getTicketCount() / this.state.ticketsPerPage);
 
-		let pageNumbers = [...Array(pageCount).keys()].map((item) => (item + 1));
+		let pageNumbers = [...Array(pageCount).keys()].map(item => item + 1);
 
 		/* Always have buttons for first and last pages (or only first if we have 1 page) */
 		const maxPage = pageNumbers.pop() as number;
@@ -158,7 +156,7 @@ export class App extends React.Component<{}, AppState> {
 
 		/* Take only the page numbers around current page */
 		pageNumbers = pageNumbers
-			.filter((item) => (item > (current - paginationLimit) && (item < current + paginationLimit)));
+			.filter(item => item > (current - paginationLimit) && (item < current + paginationLimit));
 
 		return (<ul className='pagination justify-content-center'>
 					<PageButton pageNum={1} current={current} callback={this.changePage}/>
@@ -166,7 +164,7 @@ export class App extends React.Component<{}, AppState> {
 					<PageButton pageNum={current - 1} content={"<<"} current={current} callback={this.changePage}/>
 					: null}
 					{pageNumbers.length >= 1 ?
-					pageNumbers.map((item) => 
+					pageNumbers.map(item => 
 						(<PageButton key={item} pageNum={item} current={current} callback={this.changePage}/>))
 					: null}
 					{current < pageCount - paginationLimit ?

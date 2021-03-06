@@ -23,7 +23,7 @@ const afterRE  = /after:(\d{1,2}\/\d{1,2}\/\d{4})/;
 
 /* Switch string from DD/MM/YYYY to MM/DD/YYYY */
 const fixDate = (date: string): string => {
-    let parts = date.split("/");
+    const parts = date.split("/");
     return `${parts[1]}/${parts[0]}/${parts[2]}`;
 }
 
@@ -44,30 +44,32 @@ app.get(APIPath, (req, res) => {
 
     /* Assuming only 0 to 1 occurences of each filter expression */
     if (search) {
-        let emailMatch  = search.match(emailRE)?.[1];
-        let beforeMatch = search.match(beforeRE)?.[1];
-        let afterMatch  = search.match(afterRE)?.[1];
-
-        let cleaned = search.replace(emailRE, "")
-                            .replace(beforeRE, "")
-                            .replace(afterRE, "");
+        const emailMatch  = search.match(emailRE)?.[1];
+        const beforeMatch = search.match(beforeRE)?.[1];
+        const afterMatch  = search.match(afterRE)?.[1];
+        
+        /* Remove the patterns from query */
+        const cleaned = search.replace(emailRE, "")
+                              .replace(beforeRE, "")
+                              .replace(afterRE, "")
+                              .trim();
         
         if (emailMatch) {
             tickets = tickets.filter(t => t.userEmail === emailMatch);
         }
 
         if (beforeMatch) {
-            let before = new Date(fixDate(beforeMatch)).getTime();
+            const before = new Date(fixDate(beforeMatch)).getTime();
             tickets = tickets.filter(t => t.creationTime < before);
         }
 
         if (afterMatch) {
-            let after = new Date(fixDate(afterMatch)).getTime();
+            const after = new Date(fixDate(afterMatch)).getTime();
             tickets = tickets.filter(t => t.creationTime > after);
         }
 
         tickets = tickets
-            .filter((t) => (t.title.toLowerCase() + t.content.toLowerCase()).includes(cleaned.toLowerCase()));
+            .filter(t => (t.title.toLowerCase() + t.content.toLowerCase()).includes(cleaned.toLowerCase()));
     }
 
     switch (sortType) {
@@ -95,7 +97,7 @@ app.get(APIPath, (req, res) => {
 });
 
 app.post(APIPath + UpdateSuffix, (req, res) => {
-    let ticket = req.body as Ticket;
+    const ticket = req.body as Ticket;
     Data.saveTicket(ticket);
     res.send('OK');
 });
