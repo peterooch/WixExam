@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {APIRootPath, CountSuffix} from '@fed-exam/config';
+import {APIRootPath, UpdateSuffix} from '@fed-exam/config';
 import {AppState, sortTypes} from './App';
 
 export type Ticket = {
@@ -11,20 +11,18 @@ export type Ticket = {
     labels?: string[];
 }
 
-export type TicketCount = {
+export type QueryResult = {
+    tickets: Ticket[],
     count: number
 }
 
 export type ApiClient = {
-    getTicketCount: () => Promise<TicketCount>;
-    getTickets: (state: AppState) => Promise<Ticket[]>;
+    getTickets: (state: AppState) => Promise<QueryResult>;
+    updateTicket: (ticket: Ticket) => Promise<void>;
 }
 
 export const createApiClient = (): ApiClient => {
     return {
-        getTicketCount: () => {
-            return axios.get(APIRootPath + CountSuffix).then((res) => res.data);
-        },
         /* Make to accept AppState to avoid too much changes in call sites */
         getTickets: (state: AppState) => {
             let queries: string[] = [];
@@ -37,8 +35,12 @@ export const createApiClient = (): ApiClient => {
                 queries.push(`search=${state.search}`);
             
             queries.push(`page=${state.currentPage}`);
+            queries.push(`pageSize=${state.ticketsPerPage}`);
 
             return axios.get(`${APIRootPath}/?${queries.join('&')}`).then((res) => res.data);
+        },
+        updateTicket: (ticket: Ticket) => {
+            return axios.post(APIRootPath + UpdateSuffix, ticket);
         }
     }
 }

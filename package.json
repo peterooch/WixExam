@@ -7,7 +7,9 @@
     "b": "npm run bootstrap",
     "bootstrap": "lerna bootstrap",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "lerna run start --parallel",
+    "startclient": "cd client && npm start",
+    "startserver": "cd server && npm start",
+    "start": "npm run startserver | npm run startclient",
     "postinstall": "npm run bootstrap"
   },
   "author": "",

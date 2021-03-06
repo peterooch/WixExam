@@ -1,14 +1,13 @@
 import express from 'express';
-import bodyParser = require('body-parser');
-import { tempData } from './temp-data';
-import { serverAPIPort, APIPath, CountSuffix, PAGE_SIZE } from '@fed-exam/config';
+import { Data } from './dataapi';
+import { serverAPIPort, APIPath, PAGE_SIZE, UpdateSuffix } from '@fed-exam/config';
 import { Ticket } from '../client/src/api';
 
 console.log('starting server', { serverAPIPort, APIPath });
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use((_, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,42 +25,73 @@ app.get(APIPath, (req, res) => {
 
     // @ts-ignore
     const page: number = req.query.page || 1;
-
-    const paginatedData = tempData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
     const sortType: string = req.query.sortBy as string;
     const reverse: boolean = req.query.ascending === 'false';
-    let sortedTickets: Ticket[];
+    const search: string = req.query.search as string;
+
+    let pageSize: number = Number(req.query.pageSize);
+
+    if (pageSize === NaN)
+        pageSize = PAGE_SIZE;
+
+    let tickets = Data.getTickets();
+
+    /* Assuming only 0 to 1 occurences of each filter expression */
+    if (search) {
+        let emailMatch  = search.match(emailRE)?.[1];
+        let beforeMatch = search.match(beforeRE)?.[1];
+        let afterMatch  = search.match(afterRE)?.[1];
+
+        let cleaned = search.replace(emailRE, "")
+                            .replace(beforeRE, "")
+                            .replace(afterRE, "");
+        
+        if (emailMatch) {
+            tickets = tickets.filter(t => t.userEmail === emailMatch);
+        }
+
+        if (beforeMatch) {
+            let before = new Date(beforeMatch).getTime();
+            tickets = tickets.filter(t => t.creationTime < before);
+        }
+
+        if (afterMatch) {
+            let after = new Date(afterMatch).getTime();
+            tickets = tickets.filter(t => t.creationTime > after);
+        }
+
+        tickets = tickets
+            .filter((t) => (t.title.toLowerCase() + t.content.toLowerCase()).includes(cleaned.toLowerCase()));
+    }
 
     switch (sortType) {
         case 'date':
             if (!reverse)
-                sortedTickets = paginatedData.sort((x, y) => x.creationTime - y.creationTime);
+                tickets = tickets.sort((x, y) => x.creationTime - y.creationTime);
             else
-                sortedTickets = paginatedData.sort((y, x) => x.creationTime - y.creationTime);
+                tickets = tickets.sort((y, x) => x.creationTime - y.creationTime);
             break;
         case 'title':
             if (!reverse)
-                sortedTickets = paginatedData.sort((x, y) => x.title.localeCompare(y.title));
+                tickets = tickets.sort((x, y) => x.title.localeCompare(y.title));
             else
-                sortedTickets = paginatedData.sort((y, x) => x.title.localeCompare(y.title));
+                tickets = tickets.sort((y, x) => x.title.localeCompare(y.title));
             break;
         case 'email':
             if (!reverse)
-                sortedTickets = paginatedData.sort((x, y) => x.userEmail.localeCompare(y.userEmail));
+                tickets = tickets.sort((x, y) => x.userEmail.localeCompare(y.userEmail));
             else
-                sortedTickets = paginatedData.sort((y, x) => x.userEmail.localeCompare(y.userEmail));
-            break;
-        default:
-            sortedTickets = paginatedData;
+                tickets = tickets.sort((y, x) => x.userEmail.localeCompare(y.userEmail));
             break;
     }
-    
-    res.send(sortedTickets);
+    const pageTickets = tickets.slice((page - 1) * pageSize, page * pageSize);
+    res.send({tickets: pageTickets, count: tickets.length});
 });
 
-app.get(APIPath + CountSuffix, (_req, res) => {
-    res.send({ count: tempData?.length ?? 0 });
+app.post(APIPath + UpdateSuffix, (req, res) => {
+    let ticket = req.body as Ticket;
+    Data.saveTicket(ticket);
+    res.send('OK');
 });
 
 app.listen(serverAPIPort);

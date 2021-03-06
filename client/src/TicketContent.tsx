@@ -15,7 +15,7 @@ export class TicketContent extends React.Component<ITicketProps, ContentState> {
         collapsed: true
     }
 
-    onChange() {
+    switchState() {
         this.setState({collapsed: !this.state.collapsed})
     }
 
@@ -24,7 +24,7 @@ export class TicketContent extends React.Component<ITicketProps, ContentState> {
                     <div className={this.state.collapsed ? "collapsed" : ""}>
                         {this.props.content}
                     </div>
-                    <button className='btn btn-link btn-sm' onClick={(_) => this.onChange()}>
+                    <button className='btn btn-link btn-sm' onClick={(_) => this.switchState()}>
                         {this.state.collapsed ? 'Show More' : 'Show Less'}
                     </button>
                 </div>);
