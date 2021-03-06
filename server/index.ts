@@ -21,6 +21,12 @@ const emailRE  = /email:([A-Za-z0-9\+\._]+@[\w+\.]+\w+)/;
 const beforeRE = /before:(\d{1,2}\/\d{1,2}\/\d{4})/;
 const afterRE  = /after:(\d{1,2}\/\d{1,2}\/\d{4})/;
 
+/* Switch string from DD/MM/YYYY to MM/DD/YYYY */
+const fixDate = (date: string): string => {
+    let parts = date.split("/");
+    return `${parts[1]}/${parts[0]}/${parts[2]}`;
+}
+
 app.get(APIPath, (req, res) => {
 
     // @ts-ignore
@@ -51,12 +57,12 @@ app.get(APIPath, (req, res) => {
         }
 
         if (beforeMatch) {
-            let before = new Date(beforeMatch).getTime();
+            let before = new Date(fixDate(beforeMatch)).getTime();
             tickets = tickets.filter(t => t.creationTime < before);
         }
 
         if (afterMatch) {
-            let after = new Date(afterMatch).getTime();
+            let after = new Date(fixDate(afterMatch)).getTime();
             tickets = tickets.filter(t => t.creationTime > after);
         }
 

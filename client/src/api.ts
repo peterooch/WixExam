@@ -13,7 +13,7 @@ export type Ticket = {
 
 export type QueryResult = {
     tickets: Ticket[],
-    count: number
+    count: number,
 }
 
 export type ApiClient = {
@@ -25,7 +25,11 @@ export const createApiClient = (): ApiClient => {
     return {
         /* Make to accept AppState to avoid too much changes in call sites */
         getTickets: (state: AppState) => {
-            let queries: string[] = [];
+
+            if (state.superSearch)
+                return axios.get(`${APIRootPath}/?superSearch=${state.search}`);
+
+            const queries: string[] = [];
 
             if (sortTypes.includes(state.sort)) {
                 queries.push(`sortBy=${state.sort}`);

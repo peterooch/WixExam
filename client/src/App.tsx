@@ -1,8 +1,9 @@
 import React from 'react';
 import './App.scss';
 import { createApiClient, Ticket } from './api';
-import { TicketContent } from './TicketContent';
 import { PAGE_SIZE } from '@fed-exam/config';
+import { TicketContent } from './TicketContent';
+import { PageButton } from './PageButton';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -22,25 +23,6 @@ const paginationLimit = 4;
 
 export const sortTypes = ['date', 'title', 'email'];
 
-interface IPageButtonProps {
-	parent: App,
-	pageNum: number,
-	content?: string,
-}
-
-class PageButton extends React.Component<IPageButtonProps, {}> {
-	render() {
-		const pageNum = this.props.pageNum;
-		const content = this.props.content;
-		const parent  = this.props.parent;
-		return (<li className={`page-item ${(parent.state.currentPage === pageNum) && !content ? "active" : ""}`}>
-					<button className="page-link"
-							onClick={() => parent.changePage(1)}>
-						{content ? content : pageNum}
-					</button>
-				</li>);
-	}
-}
 export class App extends React.Component<{}, AppState> {
 
 	state: AppState = {
@@ -60,7 +42,7 @@ export class App extends React.Component<{}, AppState> {
 	}
 
 	editTitle = async (ticketId: string) => {
-		let ticket = this.state.tickets?.find(t => t.id === ticketId);
+		let ticket = this.state.tickets?.find((t) => (t.id === ticketId));
 		let newtitle = prompt("Title rename", ticket?.title);
 
 		if (ticket && newtitle && ticket.title !== newtitle) {
@@ -165,72 +147,35 @@ export class App extends React.Component<{}, AppState> {
 	}
 
 	renderPageLinks = () => {
-		const curr = this.state.currentPage;
+		const current = this.state.currentPage;
 		const pageCount = Math.ceil(this.getTicketCount() / this.state.ticketsPerPage);
 
-		let pageNumbers = [...Array(pageCount).keys()].map(i => i + 1);
+		let pageNumbers = [...Array(pageCount).keys()].map((item) => (item + 1));
 
-		/* Always have buttons for first and last pages*/
+		/* Always have buttons for first and last pages (or only first if we have 1 page) */
 		const maxPage = pageNumbers.pop() as number;
 		pageNumbers.shift();
-		pageNumbers = pageNumbers.filter(i => i > (curr - paginationLimit) && (i < curr + paginationLimit));
 
-		let content1 = (<ul className='pagination justify-content-center'>
-							<li key={1} className={`page-item ${(curr === 1) ? "active" : ""}`}>
-								<button className="page-link"
-										onClick={() => this.changePage(1)}>
-									{1}
-								</button>
-							</li>
-							{curr > paginationLimit + 1 ?
-							<li key="prev" className="page-item">
-								<button className="page-link"
-										onClick={() => this.changePage(curr - 1)}>
-									&lt;&lt;
-								</button>
-							</li>
-							: null}
-							{pageNumbers.length >= 1 ?
-							pageNumbers.map((item) => (<li key={item} className={`page-item ${(curr === item) ? "active" : ""}`}>
-								<button className="page-link"
-										onClick={() => this.changePage(item)}>
-									{item}
-								</button>
-							</li>))
-							: null}
-							{curr < pageCount - paginationLimit ?
-							<li key="next" className="page-item">
-								<button className="page-link"
-										onClick={() => this.changePage(curr + 1)}>
-									&gt;&gt;
-								</button>
-							</li>
-							: null}
-							{maxPage !== 1 ?
-							<li key={maxPage} className={`page-item ${(curr === maxPage) ? "active" : ""}`}>
-								<button className="page-link"
-										onClick={() => this.changePage(maxPage)}>
-									{maxPage}
-								</button>
-							</li>
-							: null}
-					  </ul>);
-		let content2 = (<ul className='pagination justify-content-center'>
-							<PageButton pageNum={1} parent={this}/>
-							{curr > paginationLimit + 1 ?
-							<PageButton pageNum={curr - 1} content={"<<"} parent={this}/>
-							: null}
-							{pageNumbers.length >= 1 ?
-							pageNumbers.map((item) => (<PageButton key={item} pageNum={item} parent={this}/>))
-							: null}
-							{curr < pageCount - paginationLimit ?
-							<PageButton pageNum={curr + 1} content={">>"} parent={this}/>
-							: null}
-							{maxPage !== 1 ?
-							<PageButton pageNum={maxPage} parent={this}/>
-							: null}
-					</ul>);
-		return content2;
+		/* Take only the page numbers around current page */
+		pageNumbers = pageNumbers
+			.filter((item) => (item > (current - paginationLimit) && (item < current + paginationLimit)));
+
+		return (<ul className='pagination justify-content-center'>
+					<PageButton pageNum={1} current={current} callback={this.changePage}/>
+					{current > paginationLimit + 1 ?
+					<PageButton pageNum={current - 1} content={"<<"} current={current} callback={this.changePage}/>
+					: null}
+					{pageNumbers.length >= 1 ?
+					pageNumbers.map((item) => 
+						(<PageButton key={item} pageNum={item} current={current} callback={this.changePage}/>))
+					: null}
+					{current < pageCount - paginationLimit ?
+					<PageButton pageNum={current + 1} content={">>"} current={current} callback={this.changePage}/>
+					: null}
+					{maxPage !== 1 ?
+					<PageButton pageNum={maxPage} current={current} callback={this.changePage}/>
+					: null}
+				</ul>);
 	}
 }
 
