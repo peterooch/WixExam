@@ -38,8 +38,8 @@ app.get(APIPath, (req, res) => {
     
     let pageSize: number = Number(req.query.pageSize);
     
-    if (pageSize === NaN)
-    pageSize = PAGE_SIZE;
+    if (pageSize === NaN || pageSize < 1)
+        pageSize = PAGE_SIZE;
 
     let tickets = Data.getTickets();
 
