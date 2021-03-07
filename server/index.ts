@@ -28,27 +28,29 @@ const fixDate = (date: string): string => {
 }
 
 app.get(APIPath, (req, res) => {
-
+    
+    /* Process GET parameters */
     // @ts-ignore
     const page: number = req.query.page || 1;
     const sortType: string = req.query.sortBy as string;
     const reverse: boolean = req.query.ascending === 'false';
     const search: string = req.query.search as string;
-
+    
     let pageSize: number = Number(req.query.pageSize);
-
+    
     if (pageSize === NaN)
-        pageSize = PAGE_SIZE;
+    pageSize = PAGE_SIZE;
 
     let tickets = Data.getTickets();
 
     /* Assuming only 0 to 1 occurences of each filter expression */
     if (search) {
+        /* look for possible matches */
         const emailMatch  = search.match(emailRE)?.[1];
         const beforeMatch = search.match(beforeRE)?.[1];
         const afterMatch  = search.match(afterRE)?.[1];
         
-        /* Remove the patterns from query */
+        /* Remove the patterns from query if they might exist */
         const cleaned = search.replace(emailRE, "")
                               .replace(beforeRE, "")
                               .replace(afterRE, "")
@@ -58,20 +60,27 @@ app.get(APIPath, (req, res) => {
             tickets = tickets.filter(t => t.userEmail === emailMatch);
         }
 
-        if (beforeMatch) {
-            const before = new Date(fixDate(beforeMatch)).getTime();
-            tickets = tickets.filter(t => t.creationTime < before);
-        }
-
-        if (afterMatch) {
-            const after = new Date(fixDate(afterMatch)).getTime();
-            tickets = tickets.filter(t => t.creationTime > after);
+        if (beforeMatch || afterMatch) {
+            if (beforeMatch && afterMatch) {
+                const before = new Date(fixDate(beforeMatch)).getTime();
+                const after  = new Date(fixDate(afterMatch)).getTime();
+                tickets = tickets.filter(t => t.creationTime > after && t.creationTime < before);
+            }
+            else if (afterMatch) {
+                const after = new Date(fixDate(afterMatch)).getTime();
+                tickets = tickets.filter(t => t.creationTime > after);
+            }
+            else if (beforeMatch) {
+                const before = new Date(fixDate(beforeMatch)).getTime();
+                tickets = tickets.filter(t => t.creationTime < before);
+            }
         }
 
         tickets = tickets
             .filter(t => (t.title.toLowerCase() + t.content.toLowerCase()).includes(cleaned.toLowerCase()));
     }
 
+    /* apply sort if there is a valid value */
     switch (sortType) {
         case 'date':
             if (!reverse)

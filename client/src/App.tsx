@@ -100,16 +100,16 @@ export class App extends React.Component<{}, AppState> {
 			</header>
 			<span className="btn-group">
 			{sortTypes.map((type) => <button key={type}
-											 className={`sortbtn btn ${this.state.sort === type ? 'btn-dark' : 'btn-light'} btn-sm`}
+											 className={`btn ${this.state.sort === type ? 'btn-dark' : 'btn-light'} btn-sm`}
 											 onClick={() => this.changeSort(type)}>
 										Sort by {type}
 									 </button>)}
 			</span>
-			&nbsp;Tickets per page:&nbsp;
+			&nbsp;Tickets per page:&nbsp; {/* Personal Addition, select how many tickets to display per page */}
 			<input type="number" className="page-size"
 					value={this.state.ticketsPerPage}
 					onChange={(e) => this.setState({ticketsPerPage: Number(e.target.value)}, this.updateTickets)}/>&nbsp;
-			{/* //Attempt at making the superseach
+			{/* //Attempt at making the supersearch
 			<input type="checkbox"
 				   checked={this.state.superSearch}
 				   onChange={() => this.setState({superSearch: !this.state.superSearch}, this.updateTickets)}/>&nbsp;Super Search (disables sorting and advanced filtering)
