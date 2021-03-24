@@ -42,7 +42,7 @@ app.get(APIPath, (req, res) => {
         pageSize = PAGE_SIZE;
 
     let tickets = Data.getTickets();
-
+    //let pinnedTickets = ...;
     /* Assuming only 0 to 1 occurences of each filter expression */
     if (search) {
         /* look for possible matches */
@@ -102,7 +102,7 @@ app.get(APIPath, (req, res) => {
             break;
     }
     const pageTickets = tickets.slice((page - 1) * pageSize, page * pageSize);
-    res.send({tickets: pageTickets, count: tickets.length});
+    res.send({tickets: pageTickets, count: tickets.length, pinned: 2});
 });
 
 app.post(APIPath + UpdateSuffix, (req, res) => {
